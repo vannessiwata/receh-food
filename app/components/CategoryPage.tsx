@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useExpense } from '../context/ExpenseContext';
-import { Category } from '../types';
+import { Category, Expense } from '../types';
 import ExpenseCard from './ExpenseCard';
 import AddExpenseModal from './AddExpenseModal';
 
@@ -15,9 +15,20 @@ interface CategoryLayoutProps {
 export default function CategoryLayout({ title, category, description }: CategoryLayoutProps) {
     const { expenses, deleteExpense } = useExpense();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [expenseToEdit, setExpenseToEdit] = useState<Expense | undefined>(undefined);
 
     const filteredExpenses = expenses.filter(e => e.category === category);
     const total = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+    const handleEdit = (expense: Expense) => {
+        setExpenseToEdit(expense);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setExpenseToEdit(undefined);
+    };
 
     return (
         <div className="min-h-full">
@@ -44,7 +55,12 @@ export default function CategoryLayout({ title, category, description }: Categor
                     </div>
                 ) : (
                     filteredExpenses.map(expense => (
-                        <ExpenseCard key={expense.id} expense={expense} onDelete={deleteExpense} />
+                        <ExpenseCard
+                            key={expense.id}
+                            expense={expense}
+                            onDelete={deleteExpense}
+                            onEdit={handleEdit}
+                        />
                     ))
                 )}
             </div>
@@ -59,8 +75,9 @@ export default function CategoryLayout({ title, category, description }: Categor
 
             <AddExpenseModal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={handleCloseModal}
                 defaultCategory={category}
+                expenseToEdit={expenseToEdit}
             />
         </div>
     );

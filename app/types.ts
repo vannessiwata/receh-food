@@ -28,6 +28,7 @@ export interface AppState {
     inventory: InventoryItem[];
     users: User[];
     addExpense: (expense: Omit<Expense, 'id'>) => void;
+    updateExpense: (id: string, updates: Partial<Expense>) => void;
     deleteExpense: (id: string) => void;
     addInventoryItem: (item: Omit<InventoryItem, 'id'>) => void;
     toggleInventoryItem: (id: string) => void;

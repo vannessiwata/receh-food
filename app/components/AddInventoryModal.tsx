@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useExpense } from '../context/ExpenseContext';
+import { InventoryItem } from '../types';
 
 interface AddInventoryModalProps {
     isOpen: boolean;
     onClose: () => void;
+    itemToEdit?: InventoryItem;
 }
 
-export default function AddInventoryModal({ isOpen, onClose }: AddInventoryModalProps) {
-    const { addInventoryItem, addExpense, users, currentUser, addUser } = useExpense();
+export default function AddInventoryModal({ isOpen, onClose, itemToEdit }: AddInventoryModalProps) {
+    const { addInventoryItem, updateInventoryItem, addExpense, users, currentUser, addUser } = useExpense();
     const [name, setName] = useState('');
     const [quantity, setQuantity] = useState('');
 
@@ -20,6 +22,24 @@ export default function AddInventoryModal({ isOpen, onClose }: AddInventoryModal
     const [newUserName, setNewUserName] = useState('');
     const [isAddingUser, setIsAddingUser] = useState(false);
 
+    useEffect(() => {
+        if (isOpen) {
+            if (itemToEdit) {
+                setName(itemToEdit.name);
+                setQuantity(itemToEdit.quantityNeeded);
+                setIsBought(itemToEdit.isBought);
+                setPrice(itemToEdit.price ? itemToEdit.price.toString() : '');
+                setPayer(itemToEdit.purchaser || currentUser?.name || users[0]?.name);
+            } else {
+                setName('');
+                setQuantity('');
+                setIsBought(false);
+                setPrice('');
+                setPayer(currentUser?.name || users[0]?.name);
+            }
+        }
+    }, [isOpen, itemToEdit, currentUser, users]);
+
     if (!isOpen) return null;
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -28,28 +48,56 @@ export default function AddInventoryModal({ isOpen, onClose }: AddInventoryModal
 
         const finalPrice = price ? parseFloat(price) : 0;
 
-        const inventoryItem: any = {
-            name,
-            quantityNeeded: quantity,
-            isBought: isBought,
-        };
+        if (itemToEdit) {
+            const updates: any = {
+                name,
+                quantityNeeded: quantity,
+                isBought,
+            };
+            if (isBought) {
+                updates.price = finalPrice;
+                updates.purchaser = payer;
+            } else {
+                updates.price = null;
+                updates.purchaser = null;
+            }
 
-        if (isBought) {
-            inventoryItem.price = finalPrice;
-            inventoryItem.purchaser = payer;
-        }
+            updateInventoryItem(itemToEdit.id, updates);
 
-        addInventoryItem(inventoryItem);
+            // If changing from not bought to bought, add expense
+            if (isBought && !itemToEdit.isBought && finalPrice > 0) {
+                addExpense({
+                    title: name,
+                    amount: finalPrice,
+                    category: 'makanan',
+                    payer: payer,
+                    date: new Date().toISOString()
+                });
+            }
+        } else {
+            const inventoryItem: any = {
+                name,
+                quantityNeeded: quantity,
+                isBought: isBought,
+            };
 
-        // If already bought, add to expenses immediately
-        if (isBought && finalPrice > 0) {
-            addExpense({
-                title: name,
-                amount: finalPrice,
-                category: 'makanan',
-                payer: payer,
-                date: new Date().toISOString()
-            });
+            if (isBought) {
+                inventoryItem.price = finalPrice;
+                inventoryItem.purchaser = payer;
+            }
+
+            addInventoryItem(inventoryItem);
+
+            // If already bought, add to expenses immediately
+            if (isBought && finalPrice > 0) {
+                addExpense({
+                    title: name,
+                    amount: finalPrice,
+                    category: 'makanan',
+                    payer: payer,
+                    date: new Date().toISOString()
+                });
+            }
         }
 
         // Reset
@@ -72,7 +120,7 @@ export default function AddInventoryModal({ isOpen, onClose }: AddInventoryModal
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <div className="w-full max-w-sm bg-slate-800 rounded-2xl shadow-2xl border border-white/10 p-6 animate-in zoom-in-95 duration-200">
-                <h2 className="text-xl font-bold mb-4 text-white">Add Item</h2>
+                <h2 className="text-xl font-bold mb-4 text-white">{itemToEdit ? 'Edit Item' : 'Add Item'}</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -191,7 +239,7 @@ export default function AddInventoryModal({ isOpen, onClose }: AddInventoryModal
                             type="submit"
                             className="flex-1 px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-medium shadow-lg shadow-emerald-500/20 transition-all"
                         >
-                            {isBought ? 'Save & Add Expense' : 'Add to List'}
+                            {itemToEdit ? 'Update Item' : (isBought ? 'Save & Add Expense' : 'Add to List')}
                         </button>
                     </div>
                 </form>

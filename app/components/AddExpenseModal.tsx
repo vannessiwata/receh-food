@@ -1,22 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useExpense } from '../context/ExpenseContext';
-import { Category } from '../types';
+import { Category, Expense } from '../types';
 
 interface AddExpenseModalProps {
     isOpen: boolean;
     onClose: () => void;
     defaultCategory: Category;
+    expenseToEdit?: Expense;
 }
 
-export default function AddExpenseModal({ isOpen, onClose, defaultCategory }: AddExpenseModalProps) {
-    const { addExpense, users, addUser, currentUser } = useExpense();
+export default function AddExpenseModal({ isOpen, onClose, defaultCategory, expenseToEdit }: AddExpenseModalProps) {
+    const { addExpense, updateExpense, users, addUser, currentUser } = useExpense();
     const [title, setTitle] = useState('');
     const [amount, setAmount] = useState('');
     const [payer, setPayer] = useState(currentUser?.name || users[0].name);
     const [newUserName, setNewUserName] = useState('');
     const [isAddingUser, setIsAddingUser] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            if (expenseToEdit) {
+                setTitle(expenseToEdit.title);
+                setAmount(expenseToEdit.amount.toString());
+                setPayer(expenseToEdit.payer);
+            } else {
+                setTitle('');
+                setAmount('');
+                setPayer(currentUser?.name || users[0].name);
+            }
+        }
+    }, [isOpen, expenseToEdit, currentUser, users]);
 
     if (!isOpen) return null;
 
@@ -24,13 +39,22 @@ export default function AddExpenseModal({ isOpen, onClose, defaultCategory }: Ad
         e.preventDefault();
         if (!title || !amount || !payer) return;
 
-        addExpense({
-            title,
-            amount: parseFloat(amount),
-            payer,
-            category: defaultCategory,
-            date: new Date().toISOString(),
-        });
+        if (expenseToEdit) {
+            updateExpense(expenseToEdit.id, {
+                title,
+                amount: parseFloat(amount),
+                payer,
+                category: defaultCategory, // Usually category doesn't change here but we keep it consistent
+            });
+        } else {
+            addExpense({
+                title,
+                amount: parseFloat(amount),
+                payer,
+                category: defaultCategory,
+                date: new Date().toISOString(),
+            });
+        }
 
         // Reset and close
         setTitle('');
@@ -50,7 +74,7 @@ export default function AddExpenseModal({ isOpen, onClose, defaultCategory }: Ad
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 duration-200">
-                <h2 className="text-xl font-bold mb-4 text-slate-800">Add Expense</h2>
+                <h2 className="text-xl font-bold mb-4 text-slate-800">{expenseToEdit ? 'Edit Expense' : 'Add Expense'}</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -149,7 +173,7 @@ export default function AddExpenseModal({ isOpen, onClose, defaultCategory }: Ad
                             type="submit"
                             className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white font-bold shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/40 transform hover:-translate-y-0.5 transition-all"
                         >
-                            Save Expense
+                            {expenseToEdit ? 'Update Expense' : 'Save Expense'}
                         </button>
                     </div>
                 </form>

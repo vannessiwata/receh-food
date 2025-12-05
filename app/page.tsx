@@ -122,62 +122,64 @@ export default function Home() {
 
       {/* Payer Breakdown */}
       {/* Payer Breakdown */}
-      <section className="pb-20">
-        <h3 className="text-lg font-semibold text-slate-200 mb-4">Who Paid What</h3>
-        <div className="space-y-4">
-          {Object.entries(expensesByPayer).map(([name, userExpenses]) => {
-            const userTotal = userExpenses.reduce((sum, e) => sum + e.amount, 0);
-            const isExpanded = expandedPayer === name;
+      {activeType === 'group' && (
+        <section className="pb-20">
+          <h3 className="text-lg font-semibold text-slate-200 mb-4">Who Paid What</h3>
+          <div className="space-y-4">
+            {Object.entries(expensesByPayer).map(([name, userExpenses]) => {
+              const userTotal = userExpenses.reduce((sum, e) => sum + e.amount, 0);
+              const isExpanded = expandedPayer === name;
 
-            return (
-              <div key={name} className="bg-slate-800/40 rounded-2xl border border-white/5 overflow-hidden transition-all duration-300">
-                <button
-                  onClick={() => setExpandedPayer(isExpanded ? null : name)}
-                  className="w-full p-4 bg-white/5 flex items-center justify-between hover:bg-white/10 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center text-xs font-bold">
-                      {name.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="font-medium text-white">{name}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-cyan-400">Rp {userTotal.toLocaleString()}</span>
-                    <svg
-                      className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </button>
-
-                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                  <div className="p-4 space-y-3 border-t border-white/5 bg-slate-900/20">
-                    {userExpenses.map((expense) => (
-                      <div key={expense.id} className="flex justify-between items-start text-sm">
-                        <div className="text-slate-300 flex-1 pr-4">
-                          {expense.title}
-                          <div className="text-[10px] text-slate-500 uppercase mt-0.5">{expense.category}</div>
-                        </div>
-                        <div className="font-mono text-slate-400 whitespace-nowrap">
-                          Rp {expense.amount.toLocaleString()}
-                        </div>
+              return (
+                <div key={name} className="bg-slate-800/40 rounded-2xl border border-white/5 overflow-hidden transition-all duration-300">
+                  <button
+                    onClick={() => setExpandedPayer(isExpanded ? null : name)}
+                    className="w-full p-4 bg-white/5 flex items-center justify-between hover:bg-white/10 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center text-xs font-bold">
+                        {name.charAt(0).toUpperCase()}
                       </div>
-                    ))}
+                      <span className="font-medium text-white">{name}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-cyan-400">Rp {userTotal.toLocaleString()}</span>
+                      <svg
+                        className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </button>
+
+                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="p-4 space-y-3 border-t border-white/5 bg-slate-900/20">
+                      {userExpenses.map((expense) => (
+                        <div key={expense.id} className="flex justify-between items-start text-sm">
+                          <div className="text-slate-300 flex-1 pr-4">
+                            {expense.title}
+                            <div className="text-[10px] text-slate-500 uppercase mt-0.5">{expense.category}</div>
+                          </div>
+                          <div className="font-mono text-slate-400 whitespace-nowrap">
+                            Rp {expense.amount.toLocaleString()}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
 
-          {Object.keys(expensesByPayer).length === 0 && (
-            <p className="text-center text-slate-500 py-4 text-sm">Belum ada data pengeluaran.</p>
-          )}
-        </div>
-      </section>
+            {Object.keys(expensesByPayer).length === 0 && (
+              <p className="text-center text-slate-500 py-4 text-sm">Belum ada data pengeluaran.</p>
+            )}
+          </div>
+        </section>
+      )}
 
       <SettleUpModal
         isOpen={isSettleUpModalOpen}

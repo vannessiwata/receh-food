@@ -90,6 +90,10 @@ export const ExpenseProvider = ({ children }: { children: React.ReactNode }) => 
         await addDoc(collection(db, 'expenses'), expense);
     };
 
+    const updateExpense = async (id: string, updates: Partial<Expense>) => {
+        await updateDoc(doc(db, 'expenses', id), updates);
+    };
+
     const deleteExpense = async (id: string) => {
         await deleteDoc(doc(db, 'expenses', id));
     };
@@ -130,6 +134,7 @@ export const ExpenseProvider = ({ children }: { children: React.ReactNode }) => 
                 inventory,
                 users,
                 addExpense,
+                updateExpense,
                 deleteExpense,
                 addInventoryItem,
                 toggleInventoryItem,
