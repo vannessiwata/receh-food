@@ -12,7 +12,7 @@ import {
     orderBy
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { AppState, Expense, InventoryItem, User } from '../types';
+import { AppState, Expense, InventoryItem, User, Settlement } from '../types';
 
 const ExpenseContext = createContext<AppState | undefined>(undefined);
 
@@ -29,6 +29,7 @@ const FIXED_USERS: User[] = [
 export const ExpenseProvider = ({ children }: { children: React.ReactNode }) => {
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [inventory, setInventory] = useState<InventoryItem[]>([]);
+    const [settlements, setSettlements] = useState<Settlement[]>([]);
     const [users, setUsers] = useState<User[]>(FIXED_USERS);
     const [currentUser, setCurrentUserState] = useState<User | null>(null);
 
@@ -74,6 +75,19 @@ export const ExpenseProvider = ({ children }: { children: React.ReactNode }) => 
                 ...doc.data()
             })) as InventoryItem[];
             setInventory(data);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    // Subscribe to Settlements
+    useEffect(() => {
+        const q = query(collection(db, 'settlements'), orderBy('date', 'desc'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as Settlement[];
+            setSettlements(data);
         });
         return () => unsubscribe();
     }, []);
@@ -127,12 +141,31 @@ export const ExpenseProvider = ({ children }: { children: React.ReactNode }) => 
         setUsers(prev => [...prev, { name }]);
     };
 
+    const addSettlement = async (note: string) => {
+        const totalAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
+        const settlementData: Omit<Settlement, 'id'> = {
+            date: new Date().toISOString(),
+            totalAmount,
+            note,
+            expenses: expenses
+        };
+
+        // 1. Add to settlements history
+        await addDoc(collection(db, 'settlements'), settlementData);
+
+        // 2. Delete all current expenses
+        // We can do this in parallel or batch
+        const deletePromises = expenses.map(e => deleteDoc(doc(db, 'expenses', e.id)));
+        await Promise.all(deletePromises);
+    };
+
     return (
         <ExpenseContext.Provider
             value={{
                 expenses,
                 inventory,
                 users,
+                settlements,
                 addExpense,
                 updateExpense,
                 deleteExpense,
@@ -141,6 +174,7 @@ export const ExpenseProvider = ({ children }: { children: React.ReactNode }) => 
                 updateInventoryItem,
                 deleteInventoryItem,
                 addUser,
+                addSettlement,
                 currentUser,
                 setCurrentUser,
                 logout

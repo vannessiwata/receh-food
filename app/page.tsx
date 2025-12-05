@@ -4,12 +4,14 @@ import { useExpense } from './context/ExpenseContext';
 import { useState } from 'react';
 
 import SettleUpModal from './components/SettleUpModal';
+import HistoryModal from './components/HistoryModal';
 
 export default function Home() {
   const { expenses, currentUser, logout } = useExpense();
   const [expandedPayer, setExpandedPayer] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<'group' | 'personal'>('group');
   const [isSettleUpModalOpen, setIsSettleUpModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
   // Filter expenses based on active type
   // 'group' shows all expenses
@@ -52,6 +54,14 @@ export default function Home() {
               className="px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2 hover:bg-emerald-500/20 transition-colors text-emerald-400"
             >
               <span className="text-xs font-bold">Settle</span>
+            </button>
+            <button
+              onClick={() => setIsHistoryModalOpen(true)}
+              className="px-3 py-1.5 rounded-full bg-slate-800 border border-white/10 flex items-center gap-2 hover:bg-slate-700 transition-colors text-slate-300"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </button>
             <button
               onClick={logout}
@@ -184,6 +194,11 @@ export default function Home() {
       <SettleUpModal
         isOpen={isSettleUpModalOpen}
         onClose={() => setIsSettleUpModalOpen(false)}
+      />
+
+      <HistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
       />
     </div>
   );

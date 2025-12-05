@@ -23,10 +23,19 @@ export interface User {
     name: string;
 }
 
+export interface Settlement {
+    id: string;
+    date: string;
+    totalAmount: number;
+    note: string;
+    expenses: Expense[];
+}
+
 export interface AppState {
     expenses: Expense[];
     inventory: InventoryItem[];
     users: User[];
+    settlements: Settlement[];
     addExpense: (expense: Omit<Expense, 'id'>) => void;
     updateExpense: (id: string, updates: Partial<Expense>) => void;
     deleteExpense: (id: string) => void;
@@ -35,6 +44,7 @@ export interface AppState {
     updateInventoryItem: (id: string, updates: Partial<InventoryItem>) => void;
     deleteInventoryItem: (id: string) => void;
     addUser: (name: string) => void;
+    addSettlement: (note: string) => Promise<void>;
     currentUser: User | null;
     setCurrentUser: (user: User) => void;
     logout: () => void;

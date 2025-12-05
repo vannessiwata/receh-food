@@ -13,7 +13,10 @@ interface Debt {
 }
 
 export default function SettleUpModal({ isOpen, onClose }: SettleUpModalProps) {
-    const { expenses, users } = useExpense();
+    const { expenses, users, addSettlement } = useExpense();
+    const [note, setNote] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [expandedPayer, setExpandedPayer] = useState<string | null>(null);
 
     const settlement = useMemo(() => {
         // 1. Calculate Total Expense
@@ -57,6 +60,26 @@ export default function SettleUpModal({ isOpen, onClose }: SettleUpModalProps) {
         };
     }, [expenses, users]);
 
+    const handleSettle = async () => {
+        if (!note.trim()) {
+            alert('Please add a note for this settlement (e.g. "Trip to Bali")');
+            return;
+        }
+        if (confirm('This will clear all current expenses and save them to history. Are you sure?')) {
+            setIsSubmitting(true);
+            try {
+                await addSettlement(note);
+                setNote('');
+                onClose();
+            } catch (error) {
+                console.error("Error settling up:", error);
+                alert("Failed to settle up. Please try again.");
+            } finally {
+                setIsSubmitting(false);
+            }
+        }
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -89,17 +112,55 @@ export default function SettleUpModal({ isOpen, onClose }: SettleUpModalProps) {
                     <div className="space-y-2">
                         {Object.entries(settlement.paidBy)
                             .sort(([, a], [, b]) => b - a)
-                            .map(([name, amount]) => (
-                                <div key={name} className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
-                                    <span className="font-medium text-slate-200">{name}</span>
-                                    <span className="font-mono text-slate-300">Rp {amount.toLocaleString()}</span>
-                                </div>
-                            ))}
+                            .map(([name, amount]) => {
+                                const isExpanded = expandedPayer === name;
+                                const userExpenses = expenses.filter(e => e.payer === name);
+
+                                return (
+                                    <div key={name} className="bg-white/5 rounded-lg overflow-hidden transition-all duration-200">
+                                        <button
+                                            onClick={() => setExpandedPayer(isExpanded ? null : name)}
+                                            className="w-full flex justify-between items-center p-3 hover:bg-white/5 transition-colors"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <svg
+                                                    className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                </svg>
+                                                <span className="font-medium text-slate-200">{name}</span>
+                                            </div>
+                                            <span className="font-mono text-slate-300">Rp {amount.toLocaleString()}</span>
+                                        </button>
+
+                                        {isExpanded && (
+                                            <div className="bg-black/20 border-t border-white/5 p-3 space-y-2 animate-in slide-in-from-top-2 duration-200">
+                                                {userExpenses.length === 0 ? (
+                                                    <p className="text-xs text-slate-500 text-center">No expenses recorded.</p>
+                                                ) : (
+                                                    userExpenses.map(expense => (
+                                                        <div key={expense.id} className="flex justify-between items-start text-xs">
+                                                            <div className="text-slate-400">
+                                                                <span className="text-slate-300">{expense.title}</span>
+                                                                <span className="ml-2 px-1.5 py-0.5 rounded-full bg-slate-800 text-[10px] text-slate-500 uppercase">{expense.category}</span>
+                                                            </div>
+                                                            <div className="font-mono text-slate-500">
+                                                                Rp {expense.amount.toLocaleString()}
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
                     </div>
                 </div>
 
                 {/* Settlement Plan (Gross) */}
-                <div>
+                <div className="mb-8">
                     <h3 className="text-sm font-semibold text-emerald-400 mb-3 uppercase tracking-wider">Payment Instructions</h3>
                     {settlement.receivables.length === 0 ? (
                         <div className="text-center py-8 text-slate-500">
@@ -125,9 +186,24 @@ export default function SettleUpModal({ isOpen, onClose }: SettleUpModalProps) {
                     )}
                 </div>
 
-                <div className="mt-8 pt-4 border-t border-white/10 text-center">
-                    <p className="text-xs text-slate-500">
-                        Calculated based on {users.length} users sharing {expenses.length} expenses equally.
+                {/* Action Section */}
+                <div className="pt-6 border-t border-white/10">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Save to History</label>
+                    <textarea
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        placeholder="Add a note (e.g. Trip to Bali 2024)..."
+                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 mb-4 h-24 resize-none"
+                    />
+                    <button
+                        onClick={handleSettle}
+                        disabled={isSubmitting || expenses.length === 0}
+                        className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isSubmitting ? 'Saving...' : 'Finish & Clear Expenses'}
+                    </button>
+                    <p className="text-xs text-slate-500 text-center mt-3">
+                        This will reset all expenses to 0 and save the current state to history.
                     </p>
                 </div>
             </div>
