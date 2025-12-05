@@ -42,6 +42,10 @@ export default function MakananPage() {
             // So hide unbought if specific payer selected.
             const matchesPayer = selectedPayer === 'All' || (item.isBought && item.purchaser === selectedPayer);
             return matchesSearch && matchesPayer;
+        })
+        .sort((a, b) => {
+            if (a.isBought === b.isBought) return 0;
+            return a.isBought ? 1 : -1;
         });
 
     const totalExpenses = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
