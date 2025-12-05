@@ -49,24 +49,24 @@ export default function AddExpenseModal({ isOpen, onClose, defaultCategory }: Ad
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="w-full max-w-sm bg-slate-800 rounded-2xl shadow-2xl border border-white/10 p-6 animate-in zoom-in-95 duration-200">
-                <h2 className="text-xl font-bold mb-4 text-white">Add Expense</h2>
+            <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 duration-200">
+                <h2 className="text-xl font-bold mb-4 text-slate-800">Add Expense</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-xs font-medium text-slate-400 mb-1">Description</label>
+                        <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Description</label>
                         <input
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all font-medium placeholder:text-slate-400"
                             placeholder="e.g. Grab to Hotel"
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-slate-400 mb-1">Amount (Rp)</label>
+                        <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Amount (Rp)</label>
                         <input
                             type="text"
                             value={amount.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
@@ -76,31 +76,36 @@ export default function AddExpenseModal({ isOpen, onClose, defaultCategory }: Ad
                                     setAmount(value);
                                 }
                             }}
-                            className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all font-medium placeholder:text-slate-400"
                             placeholder="0"
                             required
                         />
                     </div>
 
-
-
                     <div>
-                        <label className="block text-xs font-medium text-slate-400 mb-1">Paid By</label>
+                        <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Paid By</label>
                         {!isAddingUser ? (
                             <div className="flex gap-2">
-                                <select
-                                    value={payer}
-                                    onChange={(e) => setPayer(e.target.value)}
-                                    className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500"
-                                >
-                                    {users.map((u) => (
-                                        <option key={u.name} value={u.name}>{u.name}</option>
-                                    ))}
-                                </select>
+                                <div className="relative flex-1">
+                                    <select
+                                        value={payer}
+                                        onChange={(e) => setPayer(e.target.value)}
+                                        className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all font-medium"
+                                    >
+                                        {users.map((u) => (
+                                            <option key={u.name} value={u.name}>{u.name}</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                            <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </div>
                                 <button
                                     type="button"
                                     onClick={() => setIsAddingUser(true)}
-                                    className="px-3 py-2 bg-slate-700 rounded-lg text-slate-300 hover:text-white"
+                                    className="px-4 py-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors font-bold text-lg"
                                 >
                                     +
                                 </button>
@@ -111,20 +116,20 @@ export default function AddExpenseModal({ isOpen, onClose, defaultCategory }: Ad
                                     type="text"
                                     value={newUserName}
                                     onChange={(e) => setNewUserName(e.target.value)}
-                                    className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500"
+                                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all font-medium placeholder:text-slate-400"
                                     placeholder="Name"
                                 />
                                 <button
                                     type="button"
                                     onClick={handleAddUser}
-                                    className="px-3 py-2 bg-emerald-600 rounded-lg text-white"
+                                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 rounded-xl text-white shadow-lg shadow-emerald-500/20 transition-all"
                                 >
                                     ✓
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setIsAddingUser(false)}
-                                    className="px-3 py-2 bg-red-500/20 text-red-400 rounded-lg"
+                                    className="px-4 py-2 bg-red-50 text-red-500 hover:bg-red-100 rounded-xl transition-colors"
                                 >
                                     ✕
                                 </button>
@@ -132,19 +137,19 @@ export default function AddExpenseModal({ isOpen, onClose, defaultCategory }: Ad
                         )}
                     </div>
 
-                    <div className="flex gap-3 mt-6 pt-4 border-t border-white/5">
+                    <div className="flex gap-3 mt-8 pt-2">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors"
+                            className="flex-1 px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="flex-1 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-400 hover:from-cyan-300 hover:to-blue-300 text-white font-bold shadow-lg shadow-cyan-500/20 transition-all"
+                            className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white font-bold shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/40 transform hover:-translate-y-0.5 transition-all"
                         >
-                            Save
+                            Save Expense
                         </button>
                     </div>
                 </form>
