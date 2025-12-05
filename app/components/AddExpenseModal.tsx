@@ -68,9 +68,14 @@ export default function AddExpenseModal({ isOpen, onClose, defaultCategory }: Ad
                     <div>
                         <label className="block text-xs font-medium text-slate-400 mb-1">Amount (Rp)</label>
                         <input
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
+                            type="text"
+                            value={amount.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/,/g, '');
+                                if (value === '' || /^\d+$/.test(value)) {
+                                    setAmount(value);
+                                }
+                            }}
                             className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500"
                             placeholder="0"
                             required
@@ -137,7 +142,7 @@ export default function AddExpenseModal({ isOpen, onClose, defaultCategory }: Ad
                         </button>
                         <button
                             type="submit"
-                            className="flex-1 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-medium shadow-lg shadow-cyan-500/20 transition-all"
+                            className="flex-1 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-400 hover:from-cyan-300 hover:to-blue-300 text-white font-bold shadow-lg shadow-cyan-500/20 transition-all"
                         >
                             Save
                         </button>
