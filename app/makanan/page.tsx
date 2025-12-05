@@ -12,16 +12,38 @@ import ConfirmModal from '../components/ConfirmModal';
 
 export default function MakananPage() {
     const [activeTab, setActiveTab] = useState<'expenses' | 'inventory'>('inventory');
-    const { inventory, expenses, deleteExpense, updateInventoryItem, deleteInventoryItem } = useExpense();
+    const { inventory, expenses, deleteExpense, updateInventoryItem, deleteInventoryItem, users } = useExpense();
     const [isInvModalOpen, setIsInvModalOpen] = useState(false);
     const [isExpModalOpen, setIsExpModalOpen] = useState(false);
     const [selectedItemToBuy, setSelectedItemToBuy] = useState<InventoryItem | null>(null);
     const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null);
     const [expenseToEdit, setExpenseToEdit] = useState<Expense | undefined>(undefined);
     const [inventoryToEdit, setInventoryToEdit] = useState<InventoryItem | undefined>(undefined);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedPayer, setSelectedPayer] = useState('All');
 
     // Filter expenses for 'makanan'
-    const filteredExpenses = expenses.filter(e => e.category === 'makanan');
+    const filteredExpenses = expenses
+        .filter(e => e.category === 'makanan')
+        .filter(e => {
+            const matchesSearch = e.title.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesPayer = selectedPayer === 'All' || e.payer === selectedPayer;
+            return matchesSearch && matchesPayer;
+        });
+
+    // Filter inventory
+    const filteredInventory = inventory
+        .filter(item => {
+            const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+            // For inventory, 'payer' is 'purchaser'. Only filter if item is bought.
+            // If filtering by payer, show unbought items? Or only bought items by that payer?
+            // Let's assume: if 'All', show everything. If specific payer, show items bought by them.
+            // What about unbought items when a payer is selected? Usually you want to see what YOU bought.
+            // So hide unbought if specific payer selected.
+            const matchesPayer = selectedPayer === 'All' || (item.isBought && item.purchaser === selectedPayer);
+            return matchesSearch && matchesPayer;
+        });
+
     const totalExpenses = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
 
     const handleItemClick = (item: InventoryItem) => {
@@ -96,6 +118,32 @@ export default function MakananPage() {
                         Belanjaan
                     </button>
                 </div>
+
+                {/* Search and Filter */}
+                <div className="flex gap-2 mt-4">
+                    <div className="relative flex-1">
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search..."
+                            className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500"
+                        />
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+                            <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
+                        </svg>
+                    </div>
+                    <select
+                        value={selectedPayer}
+                        onChange={(e) => setSelectedPayer(e.target.value)}
+                        className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500"
+                    >
+                        <option value="All">All Payers</option>
+                        {users.map(u => (
+                            <option key={u.name} value={u.name}>{u.name}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             {/* Content Area */}
@@ -119,13 +167,13 @@ export default function MakananPage() {
                     )
                 ) : (
                     // Inventory List
-                    inventory.length === 0 ? (
+                    filteredInventory.length === 0 ? (
                         <div className="text-center py-20 opacity-50">
                             <p className="text-4xl mb-2">📝</p>
                             <p>List belanja kosong</p>
                         </div>
                     ) : (
-                        inventory.map(item => (
+                        filteredInventory.map(item => (
                             <div
                                 key={item.id}
                                 onClick={() => handleItemClick(item)}

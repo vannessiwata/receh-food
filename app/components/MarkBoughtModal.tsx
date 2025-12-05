@@ -19,13 +19,21 @@ export default function MarkBoughtModal({ item, isOpen, onClose }: MarkBoughtMod
 
     if (!isOpen) return null;
 
+    const toTitleCase = (str: string) => {
+        return str.split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         const finalPrice = price ? parseFloat(price) : 0;
+        const formattedName = toTitleCase(item.name);
 
         // Update inventory status
         updateInventoryItem(item.id, {
+            name: formattedName, // Ensure name is formatted even if it wasn't before
             isBought: true,
             price: finalPrice,
             purchaser: payer
@@ -34,7 +42,7 @@ export default function MarkBoughtModal({ item, isOpen, onClose }: MarkBoughtMod
         // Add to expenses
         if (finalPrice > 0) {
             addExpense({
-                title: item.name,
+                title: formattedName,
                 amount: finalPrice,
                 category: 'makanan',
                 payer: payer,

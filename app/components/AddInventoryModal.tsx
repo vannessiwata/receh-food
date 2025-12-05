@@ -42,15 +42,22 @@ export default function AddInventoryModal({ isOpen, onClose, itemToEdit }: AddIn
 
     if (!isOpen) return null;
 
+    const toTitleCase = (str: string) => {
+        return str.split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!name) return;
 
+        const formattedName = toTitleCase(name);
         const finalPrice = price ? parseFloat(price) : 0;
 
         if (itemToEdit) {
             const updates: any = {
-                name,
+                name: formattedName,
                 quantityNeeded: quantity,
                 isBought,
             };
@@ -67,7 +74,7 @@ export default function AddInventoryModal({ isOpen, onClose, itemToEdit }: AddIn
             // If changing from not bought to bought, add expense
             if (isBought && !itemToEdit.isBought && finalPrice > 0) {
                 addExpense({
-                    title: name,
+                    title: formattedName,
                     amount: finalPrice,
                     category: 'makanan',
                     payer: payer,
@@ -76,7 +83,7 @@ export default function AddInventoryModal({ isOpen, onClose, itemToEdit }: AddIn
             }
         } else {
             const inventoryItem: any = {
-                name,
+                name: formattedName,
                 quantityNeeded: quantity,
                 isBought: isBought,
             };
@@ -91,7 +98,7 @@ export default function AddInventoryModal({ isOpen, onClose, itemToEdit }: AddIn
             // If already bought, add to expenses immediately
             if (isBought && finalPrice > 0) {
                 addExpense({
-                    title: name,
+                    title: formattedName,
                     amount: finalPrice,
                     category: 'makanan',
                     payer: payer,

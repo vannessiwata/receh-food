@@ -35,20 +35,28 @@ export default function AddExpenseModal({ isOpen, onClose, defaultCategory, expe
 
     if (!isOpen) return null;
 
+    const toTitleCase = (str: string) => {
+        return str.split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!title || !amount || !payer) return;
 
+        const formattedTitle = toTitleCase(title);
+
         if (expenseToEdit) {
             updateExpense(expenseToEdit.id, {
-                title,
+                title: formattedTitle,
                 amount: parseFloat(amount),
                 payer,
                 category: defaultCategory, // Usually category doesn't change here but we keep it consistent
             });
         } else {
             addExpense({
-                title,
+                title: formattedTitle,
                 amount: parseFloat(amount),
                 payer,
                 category: defaultCategory,
