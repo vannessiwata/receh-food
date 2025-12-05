@@ -11,7 +11,7 @@ interface MarkBoughtModalProps {
 }
 
 export default function MarkBoughtModal({ item, isOpen, onClose }: MarkBoughtModalProps) {
-    const { updateInventoryItem, users, addUser, currentUser } = useExpense();
+    const { updateInventoryItem, addExpense, users, addUser, currentUser } = useExpense();
     const [price, setPrice] = useState(item.price?.toString() || '');
     const [payer, setPayer] = useState(item.purchaser || currentUser?.name || users[0].name);
     const [newUserName, setNewUserName] = useState('');
@@ -22,11 +22,25 @@ export default function MarkBoughtModal({ item, isOpen, onClose }: MarkBoughtMod
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        const finalPrice = price ? parseFloat(price) : 0;
+
+        // Update inventory status
         updateInventoryItem(item.id, {
             isBought: true,
-            price: price ? parseFloat(price) : undefined,
+            price: finalPrice,
             purchaser: payer
         });
+
+        // Add to expenses
+        if (finalPrice > 0) {
+            addExpense({
+                title: item.name,
+                amount: finalPrice,
+                category: 'makanan',
+                payer: payer,
+                date: new Date().toISOString()
+            });
+        }
 
         onClose();
     };

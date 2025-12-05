@@ -77,6 +77,8 @@ export default function AddExpenseModal({ isOpen, onClose, defaultCategory }: Ad
                         />
                     </div>
 
+
+
                     <div>
                         <label className="block text-xs font-medium text-slate-400 mb-1">Paid By</label>
                         {!isAddingUser ? (

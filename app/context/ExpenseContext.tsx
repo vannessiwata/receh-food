@@ -94,10 +94,10 @@ export const ExpenseProvider = ({ children }: { children: React.ReactNode }) => 
         await deleteDoc(doc(db, 'expenses', id));
     };
 
-    const addInventoryItem = async (item: Omit<InventoryItem, 'id' | 'isBought'>) => {
+    const addInventoryItem = async (item: Omit<InventoryItem, 'id'>) => {
         await addDoc(collection(db, 'inventory'), {
             ...item,
-            isBought: false
+            isBought: item.isBought ?? false
         });
     };
 

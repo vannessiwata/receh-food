@@ -7,6 +7,7 @@ export interface Expense {
     payer: string; // Name of the person who paid
     category: Category;
     date: string;
+    type?: 'group' | 'personal';
 }
 
 export interface InventoryItem {
@@ -28,7 +29,7 @@ export interface AppState {
     users: User[];
     addExpense: (expense: Omit<Expense, 'id'>) => void;
     deleteExpense: (id: string) => void;
-    addInventoryItem: (item: Omit<InventoryItem, 'id' | 'isBought'>) => void;
+    addInventoryItem: (item: Omit<InventoryItem, 'id'>) => void;
     toggleInventoryItem: (id: string) => void;
     updateInventoryItem: (id: string, updates: Partial<InventoryItem>) => void;
     deleteInventoryItem: (id: string) => void;
